@@ -28,8 +28,7 @@ while True:
             mpDraw.draw_landmarks(bg, handLms, mpHands.HAND_CONNECTIONS)
 
         if count % 5 == 0 and count > 0:
-            cv2.imwrite(f'images/{count//5}.jpg', bg)
-
+            cv2.imwrite(f'images/2-{count//5}.jpg', bg)
 
     cv2.imshow("Image", bg)
     cv2.waitKey(1)
