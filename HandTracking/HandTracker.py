@@ -68,16 +68,19 @@ class Tracker:
                         # Рисуем точки и соединения на изображении
                         self.mp_draw.draw_landmarks(bg, handLms, self.mp_hands.HAND_CONNECTIONS)
 
-                # Сохраняем изображение и JSON каждые 5 кадров
-                if start % 5 == 0 and letter != '0':
-                    if not os.path.exists(f'references/{letter_number}/{start // 5}.jpg'):
+                # Сохраняем изображение и JSON каждые 2 кадра
+                if start % 2 == 0 and letter != '0':
+                    if not os.path.exists(f'references/{letter_number}/{start // 2}.jpg'):
                         # Сохраняем изображение с нанесёнными точками руки
-                        cv2.imwrite(f'references/{letter_number}/{start // 5}.jpg', bg)
+                        cv2.imwrite(f'references/{letter_number}/{start // 2}.jpg', bg)
 
                     # Записываем данные в JSON-файл
-                    with open(json_path + f'{start // 5}.json', "w", encoding="utf-8") as file:
-                        print(start // 5, hand_data)  # Выводим отладочную информацию
-                        json.dump(hand_data, file, indent=4)  # Сохраняем координаты в JSON
+                    with open(json_path + f'{start // 2}.json', "w", encoding="utf-8") as file:
+                        hand_data = {
+                            letter: hand_data
+                        }
+                        print(start // 2, hand_data)  # Выводим отладочную информацию
+                        json.dump(hand_data, file, indent=4, ensure_ascii=False)  # Сохраняем координаты в JSON
 
                 elif letter == '0':  # Если передан символ '0', сбрасываем счётчик
                     start = 0
