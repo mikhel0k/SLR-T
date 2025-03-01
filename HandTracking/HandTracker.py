@@ -37,12 +37,12 @@ class Tracker:
         Захватывает кадры с камеры, отслеживает руки и сохраняет данные о координатах
         в JSON и изображения с разметкой в папку references/
         """
-        start = (start - 1) * 5  # Коррекция номера кадра
+        start = (start - 1) * 2  # Коррекция номера кадра
         if letter != '0':
             letter_number = self.letters[letter]  # Получаем числовой идентификатор буквы
             json_path = f'references/{letter_number}/'  # Формируем путь для сохранения JSON-файлов
 
-        while start < finish * 5:  # Цикл записи данных
+        while start < finish * 2:  # Цикл записи данных
             # Проверяем, существует ли фоновое изображение
             if os.path.exists('background.jpg'):
                 bg = cv2.imread('background.jpg')
