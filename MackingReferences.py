@@ -4,4 +4,6 @@ from HandTracking.HandTracker import Tracker
 # Создаём объект трекера рук, передавая номер камеры (0 - основная веб-камера)
 hand_tracker = Tracker(0)
 # Запускаем процесс сохранения данных, первым аргументом передаем букву, вторым номер первой записи, третьим - последней
-hand_tracker.save_references('Ничего', 0, 1000)
+
+
+hand_tracker.save_references('Ничего', 2001, 3000)
