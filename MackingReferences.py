@@ -5,4 +5,5 @@ from HandTracking.HandTracker import Tracker
 hand_tracker = Tracker(0)
 # Запускаем процесс сохранения данных, первым аргументом передаем букву, вторым номер первой записи, третьим - последней
 
+
 hand_tracker.save_references('Ничего', 2001, 3000)
