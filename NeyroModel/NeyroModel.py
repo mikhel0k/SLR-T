@@ -98,7 +98,7 @@ history = model.fit(X_train, Y_train,
                     callbacks=callbacks)  # Callbacks для управления обучением
 
 # Сохранение модели в файл
-model.save("gesture_model.h5")  # Сохранение модели для последующего использования
+model.save("gesture_model.keras")  # Сохранение модели для последующего использования
 
 # Оценка точности модели на тестовом наборе
 loss, accuracy = model.evaluate(X_test, Y_test)  # Оцениваем модель на тестовых данных
