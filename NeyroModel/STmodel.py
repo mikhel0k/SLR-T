@@ -11,7 +11,7 @@ from tensorflow.keras.utils import register_keras_serializable
 
 
 def load_json(file_path="dataset.json"):
-    """Загружает большой JSON-файл и преобразует его в массивы X и y."""
+    """Загружает JSON-файл и преобразует его в массивы X и y."""
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -152,7 +152,6 @@ def build_stgcn(input_shape, num_classes):
 num_classes = len(set(Y))  # Количество жестов
 input_shape = (3, X.shape[2], 21)  # (C, T, V)
 model = build_stgcn(input_shape, num_classes)
-
 # Компиляция
 model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
               loss="sparse_categorical_crossentropy",
@@ -161,44 +160,46 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 # Вывод информации
 model.summary()
 
-# Добавляем callbacks для ранней остановки и уменьшения LR при плато
-callbacks = [
-    keras.callbacks.EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True),  # Ранняя остановка (если `val_loss` не уменьшается 5 эпох)
-    keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1)  # Уменьшение learning rate при плато
-]
-# Обучение модели
-history = model.fit(
-    train_ds,
-    epochs=100,  # Количество эпох
-    batch_size=32, # Размер пакета
-    validation_data=val_ds,# Проверка модели на тестовом наборе во время обучения
-    callbacks=callbacks # Callbacks для управления обучением
-)
 
-# Сохранение модели
-model.save("stgcn_model.keras")
-
-# Оценка точности модели на тестовом наборе
-test_loss, test_acc = model.evaluate(test_ds)
-print(f"Test Accuracy: {test_acc:.4f}")
-
-# График точности
-plt.figure(figsize=(10, 4))
-plt.subplot(1, 2, 1)
-plt.plot(history.history["accuracy"], label="Train Accuracy")
-plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
-plt.xlabel("Epoch")
-plt.ylabel("Accuracy")
-plt.legend()
-plt.title("Accuracy Curve")
-
-# График потерь
-plt.subplot(1, 2, 2)
-plt.plot(history.history["loss"], label="Train Loss")
-plt.plot(history.history["val_loss"], label="Validation Loss")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.legend()
-plt.title("Loss Curve")
-
-plt.show()
+# # Добавляем callbacks для ранней остановки и уменьшения LR при плато
+# callbacks = [
+#     keras.callbacks.EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True),  # Ранняя остановка (если `val_loss` не уменьшается 5 эпох)
+#     keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1)  # Уменьшение learning rate при плато
+# ]
+# # Обучение модели
+# history = model.fit(
+#     train_ds,
+#     epochs=100,  # Количество эпох
+#     batch_size=32, # Размер пакета
+#     validation_data=val_ds,# Проверка модели на тестовом наборе во время обучения
+#     callbacks=callbacks # Callbacks для управления обучением
+# )
+#
+# # Сохранение модели
+# model.save("stgcn_model1.keras")
+#
+# print(model.summary())
+# # Оценка точности модели на тестовом наборе
+# test_loss, test_acc = model.evaluate(test_ds)
+# print(f"Test Accuracy: {test_acc:.4f}")
+#
+# # График точности
+# plt.figure(figsize=(10, 4))
+# plt.subplot(1, 2, 1)
+# plt.plot(history.history["accuracy"], label="Train Accuracy")
+# plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
+# plt.xlabel("Epoch")
+# plt.ylabel("Accuracy")
+# plt.legend()
+# plt.title("Accuracy Curve")
+#
+# # График потерь
+# plt.subplot(1, 2, 2)
+# plt.plot(history.history["loss"], label="Train Loss")
+# plt.plot(history.history["val_loss"], label="Validation Loss")
+# plt.xlabel("Epoch")
+# plt.ylabel("Loss")
+# plt.legend()
+# plt.title("Loss Curve")
+#
+# plt.show()

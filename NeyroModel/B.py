@@ -2,9 +2,13 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import tensorflow as tf
-
+from tensorflow import keras
+from STmodel import STGCNLayer
 # Загрузка обученной модели
-model = tf.keras.models.load_model("stgcn_model.keras")
+model = tf.keras.models.load_model("stgcn_model1.keras", custom_objects={"STGCNLayer": STGCNLayer}, compile=False)
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
+              loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
 
 # Инициализация MediaPipe Hands
 mp_hands = mp.solutions.hands
@@ -36,7 +40,7 @@ while cap.isOpened():
                 landmarks.extend([lm.x, lm.y, lm.z])
 
             # Преобразуем в NumPy-массив и подготавливаем для нейросети
-            X_input = np.array(landmarks, dtype=np.float32).reshape(1, 63, 1)
+            X_input = np.array(landmarks, dtype=np.float32).reshape(1, 3, 30, 21)
 
             # Получаем предсказание
             prediction = model.predict(X_input)
