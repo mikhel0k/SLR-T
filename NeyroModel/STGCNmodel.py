@@ -101,10 +101,6 @@ X_train, X_test, y_train, y_test, adjacency_matrix = load_and_process_data()
 # print(f"Adjacency matrix shape: {adjacency_matrix.shape}")
 # print(f"Train labels shape: {y_train.shape}")
 
-import tensorflow as tf
-from tensorflow.keras import layers, Model
-
-
 class GraphConv(layers.Layer):
     def __init__(self, output_dim, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
