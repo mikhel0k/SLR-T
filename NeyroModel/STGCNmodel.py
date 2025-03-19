@@ -101,13 +101,20 @@ X_train, X_test, y_train, y_test, adjacency_matrix = load_and_process_data()
 # print(f"Adjacency matrix shape: {adjacency_matrix.shape}")
 # print(f"Train labels shape: {y_train.shape}")
 
+import tensorflow as tf
+from tensorflow.keras import layers, Model
+
+
 class GraphConv(layers.Layer):
     def __init__(self, output_dim, adjacency_matrix, **kwargs):
-        super(GraphConv, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.output_dim = output_dim
-        self.A = tf.constant(adjacency_matrix, dtype=tf.float32)
+        self.adjacency_matrix = adjacency_matrix  # Храним как numpy array
 
     def build(self, input_shape):
+        # Преобразуем в тензор при создании весов
+        self.A = tf.convert_to_tensor(self.adjacency_matrix, dtype=tf.float32)
+
         self.kernel = self.add_weight(
             name='kernel',
             shape=(input_shape[-1], self.output_dim),
@@ -116,22 +123,35 @@ class GraphConv(layers.Layer):
         )
 
     def call(self, inputs):
-        # inputs shape: (batch, frames, nodes, features)
-        # A shape: (nodes, nodes)
+        # Динамическое преобразование в тензор в текущем контексте
+        A = tf.convert_to_tensor(self.adjacency_matrix, dtype=tf.float32)
 
-        # Графовая свертка: A * X * W
-        x = tf.einsum('ij,bkjf->bkif', self.A, inputs)
+        x = tf.einsum('ij,bkjf->bkif', A, inputs)
         x = tf.einsum('bkif,fg->bkig', x, self.kernel)
         return x
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "output_dim": self.output_dim,
+            "adjacency_matrix": self.adjacency_matrix.tolist()
+        })
+        return config
 
 
 class STGCNBlock(layers.Layer):
     def __init__(self, filters, adjacency_matrix, kernel_size=3, **kwargs):
-        super(STGCNBlock, self).__init__(**kwargs)
-        self.graph_conv = GraphConv(filters, adjacency_matrix)
+        super().__init__(**kwargs)
+        self.filters = filters
+        self.adjacency_matrix = adjacency_matrix
+        self.kernel_size = kernel_size
+
+    def build(self, input_shape):
+        # Инициализируем все слои внутри build()
+        self.graph_conv = GraphConv(self.filters, self.adjacency_matrix)
         self.temporal_conv = layers.Conv2D(
-            filters,
-            kernel_size=(kernel_size, 1),
+            self.filters,
+            kernel_size=(self.kernel_size, 1),
             padding='same'
         )
         self.bn = layers.BatchNormalization()
@@ -142,24 +162,31 @@ class STGCNBlock(layers.Layer):
         x = self.bn(x)
         return tf.nn.relu(x)
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "filters": self.filters,
+            "adjacency_matrix": self.adjacency_matrix.tolist(),
+            "kernel_size": self.kernel_size
+        })
+        return config
+
 
 def build_stgcn_model(input_shape, adjacency_matrix, num_classes):
     inputs = layers.Input(shape=input_shape)
 
-    # Изменение формы для (frames, nodes, features)
-    x = layers.Permute((2, 3, 1))(inputs)  # (batch, frames, nodes, channels)
+    x = layers.Permute((2, 3, 1))(inputs)
 
-    # Блоки ST-GCN
-    x = STGCNBlock(64, adjacency_matrix)(x)
-    x = layers.MaxPool2D((2, 1))(x)  # Пуллинг по времени
-
-    x = STGCNBlock(128, adjacency_matrix)(x)
+    # Инициализация матрицы смежности для каждого блока
+    x = STGCNBlock(64, adjacency_matrix.numpy() if tf.is_tensor(adjacency_matrix) else adjacency_matrix)(x)
     x = layers.MaxPool2D((2, 1))(x)
 
-    x = STGCNBlock(256, adjacency_matrix)(x)
+    x = STGCNBlock(128, adjacency_matrix.numpy() if tf.is_tensor(adjacency_matrix) else adjacency_matrix)(x)
+    x = layers.MaxPool2D((2, 1))(x)
+
+    x = STGCNBlock(256, adjacency_matrix.numpy() if tf.is_tensor(adjacency_matrix) else adjacency_matrix)(x)
     x = layers.GlobalAveragePooling2D()(x)
 
-    # Полносвязные слои
     x = layers.Dense(512, activation='relu')(x)
     x = layers.Dropout(0.5)(x)
     outputs = layers.Dense(num_classes, activation='softmax')(x)
@@ -168,9 +195,9 @@ def build_stgcn_model(input_shape, adjacency_matrix, num_classes):
 
 
 # Использование
-input_shape = X_train.shape[1:]  # (3, 30, 21)
+adjacency_matrix = np.array(adjacency_matrix)  # Убедитесь, что это numpy array
 model = build_stgcn_model(
-    input_shape=input_shape,
+    input_shape=X_train.shape[1:],
     adjacency_matrix=adjacency_matrix,
     num_classes=y_train.shape[1]
 )
@@ -194,7 +221,7 @@ history = model.fit(
     ]
 )
 
-model.save("stgcn_model2.keras")
+model.save("stgcn_model2.keras", save_format="keras")
 
 # Оценка точности модели на тестовом наборе
 loss, accuracy = model.evaluate(X_test, y_test)  # Оцениваем модель на тестовых данных

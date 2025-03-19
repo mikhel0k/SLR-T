@@ -3,12 +3,17 @@ import mediapipe as mp
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from STmodel import STGCNLayer
+from STGCNmodel import GraphConv, STGCNBlock
+
 # Загрузка обученной модели
-model = tf.keras.models.load_model("stgcn_model1.keras", custom_objects={"STGCNLayer": STGCNLayer}, compile=False)
-model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
-              loss="sparse_categorical_crossentropy",
-              metrics=["accuracy"])
+model = tf.keras.models.load_model(
+    "stgcn_model2.keras",
+    custom_objects={
+        'GraphConv': GraphConv,
+        'STGCNBlock': STGCNBlock
+    }
+)
+
 
 # Инициализация MediaPipe Hands
 mp_hands = mp.solutions.hands
