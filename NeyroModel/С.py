@@ -1,11 +1,9 @@
-import asyncio
 import cv2
 import numpy as np
 import tensorflow as tf
 import mediapipe as mp
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from tensorflow import keras
-
+import uvicorn  # импортируем uvicorn для запуска сервера
 
 # Определение пользовательских слоев с учётом передачи параметра training
 class GraphConv(tf.keras.layers.Layer):
@@ -135,3 +133,5 @@ async def websocket_gesture(websocket: WebSocket):
             print("Клиент отсоединился")
             break
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # запускаем сервер на порту 8000
