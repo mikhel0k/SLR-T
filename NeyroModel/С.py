@@ -4,6 +4,11 @@ import tensorflow as tf
 import mediapipe as mp
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 import uvicorn  # импортируем uvicorn для запуска сервера
+import os  # Добавляем импорт os
+
+# Получаем путь к директории, где находится скрипт
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(current_dir, "gesture_model.keras")
 
 # Определение пользовательских слоев с учётом передачи параметра training
 class GraphConv(tf.keras.layers.Layer):
@@ -70,7 +75,7 @@ class STGCNBlock(tf.keras.layers.Layer):
 
 # Загрузка обученной модели с использованием кастомных слоев
 model = tf.keras.models.load_model(
-    "gesture_model.keras",
+    model_path,  # Используем абсолютный путь
     custom_objects={
         'GraphConv': GraphConv,
         'STGCNBlock': STGCNBlock
@@ -134,4 +139,4 @@ async def websocket_gesture(websocket: WebSocket):
             break
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)  # запускаем сервер на порту 8000
+    uvicorn.run(app, host="127.0.0.1", port=5000)  # запускаем сервер на порту 8000
